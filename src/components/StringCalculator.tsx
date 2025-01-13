@@ -1,43 +1,8 @@
-import { useState } from 'react';
-
-const calculateSum = (numbers: string): number => {
-  if (!numbers) return 0;
-  
-  let delimiter = ',';
-  let numbersToProcess = numbers;
-  
-  if (numbers.startsWith('//')) {
-    const delimiterEnd = numbers.indexOf('\n');
-    delimiter = numbers.substring(2, delimiterEnd);
-    numbersToProcess = numbers.substring(delimiterEnd + 1);
-  }
-  
-  numbersToProcess = numbersToProcess.replace(/\n/g, delimiter);
-  const nums = numbersToProcess.split(delimiter).map(num => parseInt(num.trim()));
-  
-  const negativeNumbers = nums.filter(num => num < 0);
-  if (negativeNumbers.length > 0) {
-    throw new Error(`negative numbers not allowed: ${negativeNumbers.join(',')}`);
-  }
-  
-  return nums.reduce((sum, num) => sum + (isNaN(num) ? 0 : num), 0);
-};
+import { useCalculator } from "../hooks/useCalculator";
+import { ResultDisplay } from "./ResultDisplay";
 
 const StringCalculator = () => {
-  const [input, setInput] = useState('');
-  const [result, setResult] = useState<number | null>(null);
-  const [error, setError] = useState('');
-
-  const handleCalculate = () => {
-    try {
-      const sum = calculateSum(input);
-      setResult(sum);
-      setError('');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      setResult(null);
-    }
-  };
+  const [{ input, result, error }, { setInput, calculate }] = useCalculator();
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
@@ -56,21 +21,14 @@ const StringCalculator = () => {
           />
           
           <button
-            onClick={handleCalculate}
+            onClick={calculate}
             className="w-full py-3 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
           >
             Calculate Sum
           </button>
         </div>
 
-        {result !== null && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <span className="text-green-700 font-semibold">Result:</span>
-              <span className="text-green-800 text-lg">{result}</span>
-            </div>
-          </div>
-        )}
+        <ResultDisplay result={result} />
 
         {error && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
